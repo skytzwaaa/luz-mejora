@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"pe.edu.luzmejora.assistant"},{"l":"pe.edu.luzmejora.enums"},{"l":"pe.edu.luzmejora.model"},{"l":"pe.edu.luzmejora.service"}];updateSearchResults();

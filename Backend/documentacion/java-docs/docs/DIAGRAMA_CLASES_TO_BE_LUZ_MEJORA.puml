@@ -1,0 +1,139 @@
+@startuml
+' Diagrama de Clases TO-BE – Luz Mejora
+' Prototipo académico · Universidad Norbert Wiener · Software I · 2026-II
+' Fuente: implementación actual del prototipo web (index.html).
+
+title Diagrama de Clases TO-BE – Luz Mejora
+
+package "model" {
+  class Suministro {
+    - numero : String
+    - estadoServicio : String
+    + esNumeroValido(numero) : boolean
+  }
+  class HistorialRecibos {
+    - numeroSuministro : String
+    + listarRecibos() : List<Recibo>
+    + filtrarPorEstado(estado) : List<Recibo>
+    + calcularPromedioConsumo(n) : double
+    + calcularPromedioGasto(n) : BigDecimal
+    + calcularDeudaAcumulada() : BigDecimal
+  }
+  class Recibo {
+    - numeroRecibo : String
+    - periodo : String
+    - monto : BigDecimal
+    - estado : EstadoRecibo
+    - consumoKwh : double
+    - lecturaAnterior : double
+    - lecturaActual : double
+    - codigoPago : String
+    + tieneDeudaPendiente() : boolean
+    + tieneConstanciaDisponible() : boolean
+  }
+  class Pago {
+    - codigoOperacion : String
+    - monto : BigDecimal
+    - fecha : LocalDate
+    - metodo : String
+  }
+  class Incidencia {
+    - codigo : String
+    - tipo : TipoIncidencia
+    - descripcion : String
+    - tieneFoto : boolean
+  }
+  class CorteServicio {
+    - distrito : String
+    - zona : String
+    - fecha : LocalDate
+    - estado : EstadoCorte
+  }
+  class Tutorial {
+    - pasoActual : int
+    - totalPasos : int
+    - visto : boolean
+    + iniciar()
+    + siguiente()
+    + finalizar()
+  }
+}
+
+package "enums" {
+  enum EstadoRecibo {
+    PAGADO
+    PENDIENTE
+    VENCIDO
+  }
+  enum EstadoCorte {
+    PROGRAMADO
+    EN_PROCESO
+    RESTABLECIDO
+  }
+  enum TipoIncidencia {
+    CABLE_CAIDO
+    FALTA_LUZ
+    BAJA_TENSION
+    POSTE_DANADO
+    ALUMBRADO_PUBLICO
+    FACTURACION
+  }
+}
+
+package "service" {
+  interface ReciboService {
+    + obtenerRecibosPorSuministro() : List<Recibo>
+  }
+  interface PagoService {
+    + procesarPago(recibo, metodo) : Pago
+  }
+  interface IncidenciaService {
+    + registrarIncidencia(i) : Incidencia
+  }
+  interface CorteService {
+    + buscarPorDistrito(c) : List<CorteServicio>
+  }
+  interface ComprobanteService {
+    + generarReciboPdf(recibo) : byte[]
+    + generarConstanciaPago(recibo) : byte[]
+  }
+}
+
+package "assistant" {
+  class LuzBot {
+    - abierto : boolean
+    + detectarIntencion(msg) : IntencionLuzBot
+    + generarRespuesta(i) : String
+  }
+  enum IntencionLuzBot {
+    ULTIMO_RECIBO
+    CONSUMO
+    PAGO
+    CORTES
+    TUTORIAL
+    DESCONOCIDO
+  }
+}
+
+Suministro "1" -- "1" HistorialRecibos : agrupa >
+HistorialRecibos "1" *-- "1..*" Recibo : contiene >
+Recibo "1" -- "0..1" Pago : cancela >
+Recibo --> EstadoRecibo : estado >
+Suministro "1" -- "0..*" Incidencia : reporta >
+Incidencia --> TipoIncidencia : clasifica >
+CorteServicio --> EstadoCorte : estado >
+ReciboService ..> Recibo : consulta
+PagoService ..> Pago : registra
+IncidenciaService ..> Incidencia : gestiona
+CorteService ..> CorteServicio : consulta
+ComprobanteService ..> Recibo : documenta
+LuzBot ..> HistorialRecibos : consulta
+LuzBot ..> Incidencia : orienta
+LuzBot ..> CorteServicio : informa
+LuzBot ..> Tutorial : guía
+LuzBot --> IntencionLuzBot : detecta
+
+note right of HistorialRecibos : 12 recibos de\nreferencia por suministro
+note right of Pago : Pago simulado:\nsin cargos reales
+note bottom of LuzBot : Asistente local por reglas.\nSin IA externa ni backend.
+@enduml
